@@ -1,22 +1,11 @@
-import {
-  S3Client,
-  PutObjectCommand,
-  DeleteObjectCommand,
-} from '@aws-sdk/client-s3';
-import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
-import path from 'path';
+import { createClient } from '@supabase/supabase-js';
 
-const client = new S3Client({
-  endpoint: process.env.DO_SPACES_ENDPOINT,
-  region: process.env.DO_SPACES_REGION ?? 'nyc3',
-  credentials: {
-    accessKeyId: process.env.DO_SPACES_KEY!,
-    secretAccessKey: process.env.DO_SPACES_SECRET!,
-  },
-  forcePathStyle: false,
-});
+const supabase = createClient(
+  process.env.SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_KEY!
+);
 
-const BUCKET = process.env.DO_SPACES_BUCKET!;
+const BUCKET = 'policewatch-videos';
 
 export async function uploadVideo(
   buffer: Buffer,
@@ -24,39 +13,17 @@ export async function uploadVideo(
   mimeType: string
 ): Promise<string> {
   const key = `videos/${Date.now()}-${filename}`;
-  await client.send(
-    new PutObjectCommand({
-      Bucket: BUCKET,
-      Key: key,
-      Body: buffer,
-      ContentType: mimeType,
-      ACL: 'public-read',
-    })
-  );
-  return `${process.env.DO_SPACES_ENDPOINT}/${BUCKET}/${key}`;
-}
+  const { error } = await supabase.storage
+    .from(BUCKET)
+    .upload(key, buffer, { contentType: mimeType, upsert: false });
 
-export async function uploadFrame(buffer: Buffer, key: string): Promise<string> {
-  await client.send(
-    new PutObjectCommand({
-      Bucket: BUCKET,
-      Key: key,
-      Body: buffer,
-      ContentType: 'image/jpeg',
-      ACL: 'private',
-    })
-  );
-  return key;
-}
+  if (error) throw new Error(`Video upload failed: ${error.message}`);
 
-export async function getFrameSignedUrl(key: string): Promise<string> {
-  return getSignedUrl(
-    client,
-    new PutObjectCommand({ Bucket: BUCKET, Key: key }),
-    { expiresIn: 300 }
-  );
+  const { data } = supabase.storage.from(BUCKET).getPublicUrl(key);
+  return data.publicUrl;
 }
 
 export async function deleteObject(key: string): Promise<void> {
-  await client.send(new DeleteObjectCommand({ Bucket: BUCKET, Key: key }));
+  const { error } = await supabase.storage.from(BUCKET).remove([key]);
+  if (error) throw new Error(`Delete failed: ${error.message}`);
 }
