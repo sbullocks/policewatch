@@ -1,0 +1,31 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Incident {
+  id               String   @id @default(cuid())
+  videoUrl         String
+  latitude         Float
+  longitude        Float
+  address          String
+  violationType    String
+  vehicleDesc      String?
+  incidentAt       DateTime
+  aiConfidence     String?
+  aiReasoning      String?
+  status           Status   @default(PENDING_REVIEW)
+  createdAt        DateTime @default(now())
+
+  @@map("incidents")
+}
+
+enum Status {
+  PUBLISHED
+  PENDING_REVIEW
+  REJECTED
+}
