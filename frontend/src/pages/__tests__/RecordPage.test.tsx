@@ -65,9 +65,9 @@ describe('RecordPage', () => {
     expect(screen.getByLabelText(/Violation Type/i)).toBeInTheDocument();
   });
 
-  it('shows location chip when location is available', () => {
+  it('pre-fills location field when location is available', () => {
     renderPage();
-    expect(screen.getByText('Peachtree St, Atlanta')).toBeInTheDocument();
+    expect(screen.getByDisplayValue('Peachtree St, Atlanta')).toBeInTheDocument();
   });
 
   it('shows re-record button when video is captured', () => {

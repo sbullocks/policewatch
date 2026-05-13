@@ -1,10 +1,8 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import {
   Container, Typography, TextField, Button, Stack,
-  CircularProgress, Alert, Divider, Chip,
+  CircularProgress, Alert, Divider,
 } from '@mui/material';
-import LocationOnIcon from '@mui/icons-material/LocationOn';
-import LocationOffIcon from '@mui/icons-material/LocationOff';
 import VideoCapture from '../components/VideoCapture';
 import ViolationTypeSelect from '../components/ViolationTypeSelect';
 import SubmitResult from '../components/SubmitResult';
@@ -19,9 +17,17 @@ export default function RecordPage() {
 
   const [violationType, setViolationType] = useState('');
   const [vehicleDesc, setVehicleDesc] = useState('');
+  const [address, setAddress] = useState('');
   const [violationError, setViolationError] = useState(false);
   const [result, setResult] = useState<Result | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
+
+  // Pre-fill address from GPS, but keep it editable so dashcam users can correct it
+  useEffect(() => {
+    if (geo.location?.address && !address) {
+      setAddress(geo.location.address);
+    }
+  }, [geo.location, address]);
 
   const handleStart = useCallback(async () => {
     geo.capture();
@@ -30,10 +36,7 @@ export default function RecordPage() {
 
   const handleSubmit = async () => {
     if (!recorder.videoBlob) return;
-    if (!violationType) {
-      setViolationError(true);
-      return;
-    }
+    if (!violationType) { setViolationError(true); return; }
     setViolationError(false);
     setSubmitError(null);
 
@@ -45,7 +48,7 @@ export default function RecordPage() {
     form.append('incidentAt', new Date().toISOString());
     form.append('latitude', String(location?.latitude ?? 0));
     form.append('longitude', String(location?.longitude ?? 0));
-    form.append('address', location?.address ?? 'Unknown location');
+    form.append('address', address.trim() || location?.address || 'Unknown location');
     if (vehicleDesc.trim()) form.append('vehicleDesc', vehicleDesc.trim());
 
     try {
@@ -60,6 +63,7 @@ export default function RecordPage() {
     recorder.reset();
     setViolationType('');
     setVehicleDesc('');
+    setAddress('');
     setViolationError(false);
     setResult(null);
     setSubmitError(null);
@@ -81,8 +85,9 @@ export default function RecordPage() {
         Report an Incident
       </Typography>
       <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-        Upload dashcam footage or an existing video clip. GPS and timestamp are auto-tagged.
-        Live recording is available for passengers — never record while driving.
+        Upload dashcam footage or an existing clip. For uploaded footage, correct the location
+        to where the violation occurred — not where you are now.
+        Live recording is for passengers only — never record while driving.
       </Typography>
 
       <Stack spacing={3}>
@@ -102,12 +107,26 @@ export default function RecordPage() {
           <>
             <Divider />
 
-            <LocationStatus geo={geo} />
-
             <ViolationTypeSelect
               value={violationType}
               onChange={setViolationType}
               error={violationError}
+            />
+
+            <TextField
+              label="Location of Violation"
+              placeholder="e.g. Main St & 5th Ave, Atlanta, GA"
+              value={address}
+              onChange={(e) => setAddress(e.target.value)}
+              fullWidth
+              helperText={
+                geo.loading
+                  ? 'Getting your GPS location…'
+                  : geo.location
+                  ? 'Auto-filled from GPS — correct if uploading dashcam footage from a different location'
+                  : 'GPS unavailable — enter the location manually'
+              }
+              InputProps={{ startAdornment: geo.loading ? <CircularProgress size={14} sx={{ mr: 1 }} /> : undefined }}
             />
 
             <TextField
@@ -138,32 +157,5 @@ export default function RecordPage() {
         )}
       </Stack>
     </Container>
-  );
-}
-
-function LocationStatus({ geo }: { geo: ReturnType<typeof useGeolocation> }) {
-  if (geo.loading) {
-    return (
-      <Chip icon={<CircularProgress size={14} />} label="Getting location…" variant="outlined" />
-    );
-  }
-  if (geo.location) {
-    return (
-      <Chip
-        icon={<LocationOnIcon />}
-        label={geo.location.address}
-        color="success"
-        variant="outlined"
-        sx={{ maxWidth: '100%', '& .MuiChip-label': { overflow: 'hidden', textOverflow: 'ellipsis' } }}
-      />
-    );
-  }
-  return (
-    <Chip
-      icon={<LocationOffIcon />}
-      label={geo.error ?? 'Location not available'}
-      color="warning"
-      variant="outlined"
-    />
   );
 }
