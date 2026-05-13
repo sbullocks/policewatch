@@ -63,7 +63,8 @@ describe('useGeolocation', () => {
     vi.stubGlobal('navigator', {
       geolocation: {
         getCurrentPosition: (_: unknown, error: PositionErrorCallback) =>
-          error({ code: 1, message: 'denied' }),
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          error({ code: 1, message: 'denied' } as any),
       },
     });
 
