@@ -81,7 +81,8 @@ export default function RecordPage() {
         Report an Incident
       </Typography>
       <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-        Record or upload a video clip (max 60 seconds). GPS and timestamp are auto-tagged.
+        Upload dashcam footage or an existing video clip. GPS and timestamp are auto-tagged.
+        Live recording is available for passengers — never record while driving.
       </Typography>
 
       <Stack spacing={3}>

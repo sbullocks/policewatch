@@ -72,6 +72,6 @@ describe('RecordPage', () => {
 
   it('shows re-record button when video is captured', () => {
     renderPage();
-    expect(screen.getByText('Re-record')).toBeInTheDocument();
+    expect(screen.getByText('Use Different Footage')).toBeInTheDocument();
   });
 });

@@ -1,9 +1,12 @@
 import { useRef } from 'react';
-import { Box, Button, Typography, CircularProgress, Stack, Chip } from '@mui/material';
+import {
+  Box, Button, Typography, CircularProgress, Stack, Chip, Divider,
+} from '@mui/material';
 import RadioButtonCheckedIcon from '@mui/icons-material/RadioButtonChecked';
 import StopIcon from '@mui/icons-material/Stop';
 import ReplayIcon from '@mui/icons-material/Replay';
 import UploadFileIcon from '@mui/icons-material/UploadFile';
+import VideocamIcon from '@mui/icons-material/Videocam';
 import { RecordState } from '../hooks/useVideoRecorder';
 
 interface Props {
@@ -26,17 +29,20 @@ export default function VideoCapture({
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
-      {videoUrl ? (
+
+      {/* Video preview */}
+      {videoUrl && (
         <Box sx={{ width: '100%', borderRadius: 2, overflow: 'hidden', bgcolor: 'black' }}>
           <video src={videoUrl} controls style={{ width: '100%', maxHeight: 320, display: 'block' }} />
         </Box>
-      ) : state === 'recording' ? (
-        <Box
-          sx={{
-            width: '100%', height: 200, bgcolor: 'black', borderRadius: 2,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}
-        >
+      )}
+
+      {/* Live recording active */}
+      {state === 'recording' && (
+        <Box sx={{
+          width: '100%', height: 200, bgcolor: 'black', borderRadius: 2,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}>
           <Stack alignItems="center" spacing={1}>
             <Chip
               icon={<RadioButtonCheckedIcon sx={{ color: 'error.main !important' }} />}
@@ -45,83 +51,98 @@ export default function VideoCapture({
               variant="outlined"
               sx={{ fontWeight: 700, letterSpacing: 1 }}
             />
-            <Typography variant="h4" color="white" fontWeight={700}>
-              {secondsLeft}s
-            </Typography>
+            <Typography variant="h4" color="white" fontWeight={700}>{secondsLeft}s</Typography>
           </Stack>
         </Box>
-      ) : null}
-
-      {error && (
-        <Typography color="error" variant="body2" textAlign="center">{error}</Typography>
       )}
 
-      <Stack direction="row" spacing={2} justifyContent="center" flexWrap="wrap">
-        {state === 'idle' && supportsMediaRecorder && (
+      {error && <Typography color="error" variant="body2" textAlign="center">{error}</Typography>}
+
+      {/* Idle state — upload primary, record secondary */}
+      {state === 'idle' && (
+        <Stack spacing={2} width="100%">
+          {/* Primary: Upload */}
           <Button
             variant="contained"
             color="primary"
             size="large"
-            startIcon={<RadioButtonCheckedIcon />}
-            onClick={onStart}
-            sx={{ px: 4, fontWeight: 700 }}
+            fullWidth
+            startIcon={<UploadFileIcon />}
+            onClick={() => fileInputRef.current?.click()}
+            sx={{ py: 1.75, fontWeight: 700, fontSize: '1rem' }}
           >
-            Start Recording
+            Upload Dashcam / Video Footage
           </Button>
-        )}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="video/*"
+            hidden
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) onFileSelect(file);
+            }}
+          />
 
-        {state === 'requesting' && (
-          <Button variant="contained" disabled size="large" startIcon={<CircularProgress size={18} />}>
-            Requesting Camera…
-          </Button>
-        )}
+          {/* Secondary: Live record (passengers only) */}
+          {supportsMediaRecorder && (
+            <>
+              <Divider>
+                <Typography variant="caption" color="text.disabled">or</Typography>
+              </Divider>
+              <Box>
+                <Button
+                  variant="outlined"
+                  color="inherit"
+                  fullWidth
+                  startIcon={<VideocamIcon />}
+                  onClick={onStart}
+                  sx={{ color: 'text.secondary', borderColor: 'divider' }}
+                >
+                  Record Live
+                </Button>
+                <Typography
+                  variant="caption"
+                  color="text.disabled"
+                  display="block"
+                  textAlign="center"
+                  sx={{ mt: 0.5 }}
+                >
+                  For passengers only — do not use while driving
+                </Typography>
+              </Box>
+            </>
+          )}
+        </Stack>
+      )}
 
-        {state === 'recording' && (
-          <Button
-            variant="contained"
-            color="error"
-            size="large"
-            startIcon={<StopIcon />}
-            onClick={onStop}
-            sx={{ px: 4, fontWeight: 700 }}
-          >
-            Stop
-          </Button>
-        )}
+      {/* Requesting camera */}
+      {state === 'requesting' && (
+        <Button variant="outlined" disabled size="large" fullWidth startIcon={<CircularProgress size={18} />}>
+          Requesting Camera…
+        </Button>
+      )}
 
-        {state === 'stopped' && (
-          <Button variant="outlined" startIcon={<ReplayIcon />} onClick={onReset}>
-            Re-record
-          </Button>
-        )}
+      {/* Recording active */}
+      {state === 'recording' && (
+        <Button
+          variant="contained"
+          color="error"
+          size="large"
+          fullWidth
+          startIcon={<StopIcon />}
+          onClick={onStop}
+          sx={{ fontWeight: 700 }}
+        >
+          Stop Recording
+        </Button>
+      )}
 
-        {(state === 'idle' || !supportsMediaRecorder) && (
-          <>
-            <Button
-              variant="outlined"
-              startIcon={<UploadFileIcon />}
-              onClick={() => fileInputRef.current?.click()}
-            >
-              Upload Video
-            </Button>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="video/*"
-              hidden
-              onChange={(e) => {
-                const file = e.target.files?.[0];
-                if (file) onFileSelect(file);
-              }}
-            />
-          </>
-        )}
-      </Stack>
-
-      {!supportsMediaRecorder && (
-        <Typography variant="caption" color="text.secondary" textAlign="center">
-          In-browser recording is not supported on your device. Please upload a video clip.
-        </Typography>
+      {/* After capture */}
+      {state === 'stopped' && (
+        <Button variant="outlined" startIcon={<ReplayIcon />} onClick={onReset} fullWidth>
+          Use Different Footage
+        </Button>
       )}
     </Box>
   );
