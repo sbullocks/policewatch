@@ -49,6 +49,7 @@ export default function RecordPage() {
     form.append('latitude', String(location?.latitude ?? 0));
     form.append('longitude', String(location?.longitude ?? 0));
     form.append('address', address.trim() || location?.address || 'Unknown location');
+    if (location?.speed != null) form.append('recorderSpeed', String(location.speed));
     if (vehicleDesc.trim()) form.append('vehicleDesc', vehicleDesc.trim());
 
     try {

@@ -16,6 +16,7 @@ const CreateIncidentSchema = z.object({
   violationType: z.enum(VIOLATION_TYPES),
   vehicleDesc: z.string().max(500).optional(),
   incidentAt: z.string().datetime(),
+  recorderSpeed: z.coerce.number().min(0).max(200).optional(), // m/s — recorder's speed, not violating vehicle
 });
 
 router.post('/', videoUpload.single('video'), async (req: Request, res: Response) => {
@@ -52,6 +53,7 @@ router.post('/', videoUpload.single('video'), async (req: Request, res: Response
       address: data.address,
       violationType: data.violationType,
       vehicleDesc: data.vehicleDesc,
+      recorderSpeed: data.recorderSpeed,
       incidentAt: new Date(data.incidentAt),
       aiConfidence: aiResult.confidence,
       aiReasoning: aiResult.reasoning,
@@ -81,6 +83,7 @@ router.get('/', async (_req: Request, res: Response) => {
       address: true,
       violationType: true,
       vehicleDesc: true,
+      recorderSpeed: true,
       incidentAt: true,
       videoUrl: true,
       createdAt: true,

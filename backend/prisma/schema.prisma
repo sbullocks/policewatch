@@ -16,6 +16,7 @@ model Incident {
   violationType    String
   vehicleDesc      String?
   incidentAt       DateTime
+  recorderSpeed    Float?
   aiConfidence     String?
   aiReasoning      String?
   status           Status   @default(PENDING_REVIEW)

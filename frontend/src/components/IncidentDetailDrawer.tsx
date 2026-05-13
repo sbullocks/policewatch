@@ -7,6 +7,7 @@ import ShareIcon from '@mui/icons-material/Share';
 import { Incident } from '../store/incidentsApi';
 import { VIOLATION_LABELS } from './ViolationTypeSelect';
 import { VIOLATION_COLORS } from './ViolationFilterBar';
+import RecorderSpeedChip from './RecorderSpeedChip';
 
 interface Props {
   incident: Incident | null;
@@ -64,6 +65,8 @@ export default function IncidentDetailDrawer({ incident, onClose }: Props) {
               {incident.vehicleDesc}
             </Typography>
           )}
+
+          <RecorderSpeedChip speedMs={incident.recorderSpeed} />
 
           <Divider sx={{ my: 2 }} />
 

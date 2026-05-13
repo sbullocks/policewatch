@@ -55,6 +55,7 @@ describe('useGeolocation', () => {
       latitude: 33.749,
       longitude: -84.388,
       address: 'Peachtree St, Atlanta, Georgia',
+      speed: null,
     });
     expect(result.current.error).toBeNull();
   });

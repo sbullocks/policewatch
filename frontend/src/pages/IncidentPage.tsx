@@ -12,6 +12,7 @@ import { useGetIncidentQuery } from '../store/incidentsApi';
 import { VIOLATION_LABELS } from '../components/ViolationTypeSelect';
 import { VIOLATION_COLORS } from '../components/ViolationFilterBar';
 import IncidentReportMap from '../components/IncidentReportMap';
+import RecorderSpeedChip from '../components/RecorderSpeedChip';
 
 export default function IncidentPage() {
   const { id } = useParams<{ id: string }>();
@@ -89,6 +90,7 @@ export default function IncidentPage() {
               {incident.vehicleDesc && (
                 <Typography variant="body2">{incident.vehicleDesc}</Typography>
               )}
+              <RecorderSpeedChip speedMs={incident.recorderSpeed} />
             </Stack>
           </Paper>
 
@@ -115,6 +117,11 @@ export default function IncidentPage() {
           <Typography><strong>Date & Time:</strong> {reportedAt}</Typography>
           {incident.vehicleDesc && (
             <Typography><strong>Vehicle:</strong> {incident.vehicleDesc}</Typography>
+          )}
+          {incident.recorderSpeed != null && (
+            <Typography>
+              <strong>Recorder's speed at capture:</strong> ~{Math.round(incident.recorderSpeed * 2.237)} mph (reference only — not the violating vehicle's speed)
+            </Typography>
           )}
           <Typography><strong>Report ID:</strong> {incident.id}</Typography>
         </Stack>

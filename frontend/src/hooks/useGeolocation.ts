@@ -4,6 +4,7 @@ export interface GeoLocation {
   latitude: number;
   longitude: number;
   address: string;
+  speed: number | null; // m/s from GPS — null if unavailable
 }
 
 export interface UseGeolocationReturn {
@@ -49,7 +50,12 @@ export function useGeolocation(): UseGeolocationReturn {
       });
 
       const address = await reverseGeocode(coords.latitude, coords.longitude);
-      const loc: GeoLocation = { latitude: coords.latitude, longitude: coords.longitude, address };
+      const loc: GeoLocation = {
+        latitude: coords.latitude,
+        longitude: coords.longitude,
+        address,
+        speed: coords.speed ?? null,
+      };
       setLocation(loc);
       return loc;
     } catch (err) {

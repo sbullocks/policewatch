@@ -25,7 +25,7 @@ vi.mock('../../hooks/useVideoRecorder', () => ({
 
 vi.mock('../../hooks/useGeolocation', () => ({
   useGeolocation: () => ({
-    location: { latitude: 33.749, longitude: -84.388, address: 'Peachtree St, Atlanta' },
+    location: { latitude: 33.749, longitude: -84.388, address: 'Peachtree St, Atlanta', speed: 12.5 },
     loading: false,
     error: null,
     capture: vi.fn().mockResolvedValue(null),

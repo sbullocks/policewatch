@@ -7,6 +7,7 @@ export interface Incident {
   address: string;
   violationType: string;
   vehicleDesc?: string;
+  recorderSpeed?: number | null; // m/s — recorder's vehicle speed at time of capture, not violating vehicle
   incidentAt: string;
   videoUrl: string;
   createdAt: string;

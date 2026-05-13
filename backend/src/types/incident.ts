@@ -17,6 +17,7 @@ export interface CreateIncidentInput {
   violationType: ViolationType;
   vehicleDesc?: string;
   incidentAt: string;
+  recorderSpeed?: number; // m/s from browser Geolocation API — recorder's vehicle speed, not the violating vehicle
 }
 
 export interface AiValidationResult {
