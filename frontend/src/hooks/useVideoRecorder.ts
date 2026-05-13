@@ -35,7 +35,10 @@ export function useVideoRecorder(): UseVideoRecorderReturn {
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const autoStopRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const supportsMediaRecorder = typeof MediaRecorder !== 'undefined';
+  const supportsMediaRecorder =
+    typeof MediaRecorder !== 'undefined' &&
+    typeof navigator !== 'undefined' &&
+    !!navigator.mediaDevices?.getUserMedia;
 
   const clearTimers = () => {
     if (timerRef.current) clearInterval(timerRef.current);

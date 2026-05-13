@@ -36,6 +36,9 @@ describe('useVideoRecorder', () => {
       ondataavailable = null;
       onstop = null;
     });
+    vi.stubGlobal('navigator', {
+      mediaDevices: { getUserMedia: vi.fn() },
+    });
 
     const { result } = renderHook(() => useVideoRecorder());
     expect(result.current.supportsMediaRecorder).toBe(true);
