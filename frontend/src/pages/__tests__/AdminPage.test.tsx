@@ -62,7 +62,7 @@ describe('AdminPage', () => {
     } as unknown as ReturnType<typeof useGetPendingQuery>);
 
     renderPage();
-    await userEvent.type(screen.getByLabelText(/Admin Password/i), 'policewatch-dev');
+    await userEvent.type(screen.getByLabelText(/Admin Password/i), 'test-password');
     await userEvent.click(screen.getByRole('button', { name: /Sign In/i }));
 
     await waitFor(() => expect(screen.getByRole('progressbar')).toBeInTheDocument());
@@ -74,7 +74,7 @@ describe('AdminPage', () => {
     } as unknown as ReturnType<typeof useGetPendingQuery>);
 
     renderPage();
-    await userEvent.type(screen.getByLabelText(/Admin Password/i), 'policewatch-dev');
+    await userEvent.type(screen.getByLabelText(/Admin Password/i), 'test-password');
     await userEvent.click(screen.getByRole('button', { name: /Sign In/i }));
 
     await waitFor(() => {
@@ -89,7 +89,7 @@ describe('AdminPage', () => {
     } as unknown as ReturnType<typeof useGetPendingQuery>);
 
     renderPage();
-    await userEvent.type(screen.getByLabelText(/Admin Password/i), 'policewatch-dev');
+    await userEvent.type(screen.getByLabelText(/Admin Password/i), 'test-password');
     await userEvent.click(screen.getByRole('button', { name: /Sign In/i }));
 
     await waitFor(() => {
