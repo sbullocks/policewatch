@@ -3,9 +3,9 @@ import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 import basicSsl from '@vitejs/plugin-basic-ssl';
 
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   plugins: [
-    basicSsl(),
+    mode === 'development' && basicSsl(),
     react(),
     VitePWA({
       registerType: 'autoUpdate',
@@ -33,4 +33,4 @@ export default defineConfig({
     globals: true,
     setupFiles: ['./src/test-setup.ts'],
   },
-});
+}));
