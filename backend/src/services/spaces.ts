@@ -1,11 +1,16 @@
-import { createClient } from '@supabase/supabase-js';
+import { S3Client, PutObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
 
-const supabase = createClient(
-  process.env.SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_KEY!
-);
+const client = new S3Client({
+  region: 'auto',
+  endpoint: `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+  credentials: {
+    accessKeyId: process.env.R2_ACCESS_KEY_ID!,
+    secretAccessKey: process.env.R2_SECRET_ACCESS_KEY!,
+  },
+});
 
-const BUCKET = 'policewatch-videos';
+const BUCKET = process.env.R2_BUCKET!;
+const PUBLIC_URL = process.env.R2_PUBLIC_URL!;
 
 export async function uploadVideo(
   buffer: Buffer,
@@ -13,17 +18,12 @@ export async function uploadVideo(
   mimeType: string
 ): Promise<string> {
   const key = `videos/${Date.now()}-${filename}`;
-  const { error } = await supabase.storage
-    .from(BUCKET)
-    .upload(key, buffer, { contentType: mimeType, upsert: false });
-
-  if (error) throw new Error(`Video upload failed: ${error.message}`);
-
-  const { data } = supabase.storage.from(BUCKET).getPublicUrl(key);
-  return data.publicUrl;
+  await client.send(
+    new PutObjectCommand({ Bucket: BUCKET, Key: key, Body: buffer, ContentType: mimeType })
+  );
+  return `${PUBLIC_URL}/${key}`;
 }
 
 export async function deleteObject(key: string): Promise<void> {
-  const { error } = await supabase.storage.from(BUCKET).remove([key]);
-  if (error) throw new Error(`Delete failed: ${error.message}`);
+  await client.send(new DeleteObjectCommand({ Bucket: BUCKET, Key: key }));
 }
