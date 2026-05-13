@@ -6,6 +6,8 @@ import { uploadVideo } from '../services/spaces';
 import { extractFrames } from '../services/ffmpeg';
 import { validateIncident } from '../services/aiValidation';
 import { notifyPendingReview } from '../services/email';
+import { extractVideoGPS } from '../services/gpsMetadata';
+import { reverseGeocode } from '../utils/geocode';
 import { submitLimiter } from '../middleware/rateLimiter';
 import { VIOLATION_TYPES } from '../types/incident';
 
@@ -35,7 +37,20 @@ router.post('/', submitLimiter, videoUpload.single('video'), async (req: Request
 
   const data = parsed.data;
 
-  const videoUrl = await uploadVideo(req.file.buffer, req.file.originalname, req.file.mimetype);
+  // Extract GPS metadata from video — runs in parallel with upload for efficiency
+  const [videoUrl, videoGps] = await Promise.all([
+    uploadVideo(req.file.buffer, req.file.originalname, req.file.mimetype),
+    extractVideoGPS(req.file.buffer),
+  ]);
+
+  // If dashcam embedded GPS, use it — more accurate than user's current location
+  const latitude = videoGps?.latitude ?? data.latitude;
+  const longitude = videoGps?.longitude ?? data.longitude;
+  const address = videoGps
+    ? ((await reverseGeocode(videoGps.latitude, videoGps.longitude)) ?? data.address)
+    : data.address;
+  const recorderSpeed = videoGps?.speedMs ?? data.recorderSpeed;
+  const incidentAt = videoGps?.recordedAt ?? new Date(data.incidentAt);
 
   const frames = await extractFrames(req.file.buffer);
   const aiResult = await validateIncident(frames, data.violationType);
@@ -50,13 +65,13 @@ router.post('/', submitLimiter, videoUpload.single('video'), async (req: Request
   const incident = await prisma.incident.create({
     data: {
       videoUrl,
-      latitude: data.latitude,
-      longitude: data.longitude,
-      address: data.address,
+      latitude,
+      longitude,
+      address,
       violationType: data.violationType,
       vehicleDesc: data.vehicleDesc,
-      recorderSpeed: data.recorderSpeed,
-      incidentAt: new Date(data.incidentAt),
+      recorderSpeed,
+      incidentAt,
       aiConfidence: aiResult.confidence,
       aiReasoning: aiResult.reasoning,
       status,
