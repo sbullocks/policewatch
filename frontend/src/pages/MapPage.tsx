@@ -57,32 +57,6 @@ export default function MapPage() {
 
   return (
     <Box sx={{ position: 'relative', height: 'calc(100vh - 64px)' }}>
-      <Stack
-        direction="row"
-        spacing={0.5}
-        sx={{
-          position: 'absolute',
-          top: 8,
-          right: 8,
-          zIndex: 1000,
-          bgcolor: 'background.paper',
-          borderRadius: 2,
-          p: 0.5,
-          boxShadow: 2,
-        }}
-      >
-        {DATE_RANGES.map(({ label, days }) => (
-          <Chip
-            key={label}
-            label={label}
-            size="small"
-            onClick={() => setDateRange(days)}
-            color={dateRange === days ? 'primary' : 'default'}
-            variant={dateRange === days ? 'filled' : 'outlined'}
-          />
-        ))}
-      </Stack>
-
       <ViolationFilterBar
         active={activeFilters}
         onChange={setActiveFilters}
@@ -111,6 +85,36 @@ export default function MapPage() {
           </Typography>
         </Box>
       )}
+
+      {/* Date range — bottom-right, clear of the violation filter chips at top */}
+      <Stack
+        direction="row"
+        spacing={0.5}
+        sx={{
+          position: 'absolute',
+          bottom: 16,
+          right: 8,
+          zIndex: 1000,
+          bgcolor: 'background.paper',
+          borderRadius: 2,
+          p: 0.5,
+          boxShadow: 2,
+          flexWrap: 'wrap',
+          maxWidth: 220,
+          justifyContent: 'flex-end',
+        }}
+      >
+        {DATE_RANGES.map(({ label, days }) => (
+          <Chip
+            key={label}
+            label={label}
+            size="small"
+            onClick={() => setDateRange(days)}
+            color={dateRange === days ? 'primary' : 'default'}
+            variant={dateRange === days ? 'filled' : 'outlined'}
+          />
+        ))}
+      </Stack>
 
       <IncidentMap incidents={filtered} onSelect={setSelected} />
       <IncidentDetailDrawer incident={selected} onClose={() => setSelected(null)} />
