@@ -5,6 +5,8 @@ import { videoUpload } from '../middleware/upload';
 import { uploadVideo } from '../services/spaces';
 import { extractFrames } from '../services/ffmpeg';
 import { validateIncident } from '../services/aiValidation';
+import { notifyPendingReview } from '../services/email';
+import { submitLimiter } from '../middleware/rateLimiter';
 import { VIOLATION_TYPES } from '../types/incident';
 
 const router = Router();
@@ -19,7 +21,7 @@ const CreateIncidentSchema = z.object({
   recorderSpeed: z.coerce.number().min(0).max(200).optional(), // m/s — recorder's speed, not violating vehicle
 });
 
-router.post('/', videoUpload.single('video'), async (req: Request, res: Response) => {
+router.post('/', submitLimiter, videoUpload.single('video'), async (req: Request, res: Response) => {
   if (!req.file) {
     res.status(400).json({ error: 'Video file is required.' });
     return;
@@ -61,6 +63,10 @@ router.post('/', videoUpload.single('video'), async (req: Request, res: Response
     },
   });
 
+  if (status === 'PENDING_REVIEW') {
+    notifyPendingReview(incident.id, data.violationType, data.address).catch(() => {});
+  }
+
   res.status(201).json({
     id: incident.id,
     status: incident.status,
@@ -73,9 +79,13 @@ router.post('/', videoUpload.single('video'), async (req: Request, res: Response
   });
 });
 
-router.get('/', async (_req: Request, res: Response) => {
+router.get('/', async (req: Request, res: Response) => {
+  const sinceRaw = req.query.since as string | undefined;
+  const since = sinceRaw ? new Date(sinceRaw) : undefined;
+  const sinceFilter = since && !isNaN(since.getTime()) ? { incidentAt: { gte: since } } : {};
+
   const incidents = await prisma.incident.findMany({
-    where: { status: 'PUBLISHED' },
+    where: { status: 'PUBLISHED', ...sinceFilter },
     select: {
       id: true,
       latitude: true,
@@ -91,6 +101,39 @@ router.get('/', async (_req: Request, res: Response) => {
     orderBy: { createdAt: 'desc' },
   });
   res.json(incidents);
+});
+
+router.get('/patterns', async (_req: Request, res: Response) => {
+  const startOfMonth = new Date();
+  startOfMonth.setDate(1);
+  startOfMonth.setHours(0, 0, 0, 0);
+
+  const [total, thisMonth, byType, hotSpots] = await Promise.all([
+    prisma.incident.count({ where: { status: 'PUBLISHED' } }),
+    prisma.incident.count({ where: { status: 'PUBLISHED', createdAt: { gte: startOfMonth } } }),
+    prisma.incident.groupBy({
+      by: ['violationType'],
+      where: { status: 'PUBLISHED' },
+      _count: { id: true },
+      orderBy: { _count: { id: 'desc' } },
+    }),
+    prisma.incident.groupBy({
+      by: ['address'],
+      where: { status: 'PUBLISHED' },
+      _count: { id: true },
+      orderBy: { _count: { id: 'desc' } },
+      take: 10,
+    }),
+  ]);
+
+  res.json({
+    total,
+    thisMonth,
+    byType: byType.map((r) => ({ violationType: r.violationType, count: r._count.id })),
+    hotSpots: hotSpots
+      .filter((r) => r._count.id >= 2)
+      .map((r) => ({ address: r.address, count: r._count.id })),
+  });
 });
 
 router.get('/:id', async (req: Request, res: Response) => {
