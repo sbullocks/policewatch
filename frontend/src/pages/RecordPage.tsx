@@ -1,8 +1,9 @@
 import { useState, useCallback, useEffect } from 'react';
 import {
   Container, Typography, TextField, Button, Stack,
-  CircularProgress, Alert, Divider,
+  CircularProgress, Alert, Divider, Collapse,
 } from '@mui/material';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import VideoCapture from '../components/VideoCapture';
 import ViolationTypeSelect from '../components/ViolationTypeSelect';
 import SubmitResult from '../components/SubmitResult';
@@ -21,6 +22,9 @@ export default function RecordPage() {
   const [violationError, setViolationError] = useState(false);
   const [result, setResult] = useState<Result | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [consentDismissed, setConsentDismissed] = useState(
+    () => sessionStorage.getItem('consentDismissed') === 'true'
+  );
 
   // Pre-fill address from GPS, but keep it editable so dashcam users can correct it
   useEffect(() => {
@@ -80,8 +84,27 @@ export default function RecordPage() {
 
   const showForm = recorder.state === 'stopped';
 
+  const handleDismissConsent = () => {
+    sessionStorage.setItem('consentDismissed', 'true');
+    setConsentDismissed(true);
+  };
+
   return (
     <Container maxWidth="sm" sx={{ py: 4 }}>
+      <Collapse in={!consentDismissed}>
+        <Alert
+          severity="info"
+          icon={<InfoOutlinedIcon />}
+          onClose={handleDismissConsent}
+          sx={{ mb: 3 }}
+        >
+          <strong>Before you record:</strong> Video recording of law enforcement in public is
+          generally protected, but audio recording laws vary by state. Never record while
+          driving — use dashcam footage or record as a passenger.{' '}
+          <a href="/legal" style={{ color: 'inherit' }}>Learn more</a>
+        </Alert>
+      </Collapse>
+
       <Typography variant="h5" fontWeight={700} gutterBottom>
         Report an Incident
       </Typography>

@@ -99,8 +99,11 @@ router.get('/', async (req: Request, res: Response) => {
   const since = sinceRaw ? new Date(sinceRaw) : undefined;
   const sinceFilter = since && !isNaN(since.getTime()) ? { incidentAt: { gte: since } } : {};
 
+  const limit = Math.min(parseInt(req.query.limit as string) || 500, 500);
+
   const incidents = await prisma.incident.findMany({
     where: { status: 'PUBLISHED', ...sinceFilter },
+    take: limit,
     select: {
       id: true,
       latitude: true,

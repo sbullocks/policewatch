@@ -6,7 +6,7 @@ A civic PWA for anonymously reporting law enforcement traffic violations. Submit
 
 - **Video evidence** — upload dashcam footage or record live from your phone
 - **AI validation** — Claude multimodal API analyzes extracted frames before publishing
-- **GPS tagging** — auto-captures location and recorder speed at time of submission
+- **GPS tagging** — auto-captures location and recorder speed; extracts real coordinates from GPS-enabled dashcam video metadata
 - **Community map** — color-coded Leaflet map filtered by violation type and date range
 - **Pattern analysis** — aggregate stats by violation type and repeat locations
 - **Incident permalinks** — shareable report pages with PDF export
