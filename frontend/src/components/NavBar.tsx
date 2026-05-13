@@ -11,6 +11,7 @@ export default function NavBar() {
         </Typography>
         <Box sx={{ display: 'flex', gap: 1 }}>
           <Button color="inherit" onClick={() => navigate('/')}>Map</Button>
+          <Button color="inherit" onClick={() => navigate('/patterns')}>Patterns</Button>
           <Button variant="contained" color="primary" onClick={() => navigate('/record')}>
             Report
           </Button>

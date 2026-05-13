@@ -19,17 +19,27 @@ export interface SubmitResult {
   message: string;
 }
 
+export interface PatternsData {
+  total: number;
+  thisMonth: number;
+  byType: { violationType: string; count: number }[];
+  hotSpots: { address: string; count: number }[];
+}
+
 export const incidentsApi = createApi({
   reducerPath: 'incidentsApi',
   baseQuery: fetchBaseQuery({ baseUrl: `${import.meta.env.VITE_API_URL ?? ''}/api` }),
   tagTypes: ['Incidents'],
   endpoints: (builder) => ({
-    getIncidents: builder.query<Incident[], void>({
-      query: () => '/incidents',
+    getIncidents: builder.query<Incident[], string | undefined>({
+      query: (since) => (since ? `/incidents?since=${since}` : '/incidents'),
       providesTags: ['Incidents'],
     }),
     getIncident: builder.query<Incident, string>({
       query: (id) => `/incidents/${id}`,
+    }),
+    getPatterns: builder.query<PatternsData, void>({
+      query: () => '/incidents/patterns',
     }),
     submitIncident: builder.mutation<SubmitResult, FormData>({
       query: (formData) => ({
@@ -42,5 +52,9 @@ export const incidentsApi = createApi({
   }),
 });
 
-export const { useGetIncidentsQuery, useGetIncidentQuery, useSubmitIncidentMutation } =
-  incidentsApi;
+export const {
+  useGetIncidentsQuery,
+  useGetIncidentQuery,
+  useGetPatternsQuery,
+  useSubmitIncidentMutation,
+} = incidentsApi;

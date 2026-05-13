@@ -19,8 +19,19 @@ export default function IncidentPage() {
   const navigate = useNavigate();
   const { data: incident, isLoading, isError } = useGetIncidentQuery(id!);
 
-  const handleShare = () => {
-    navigator.clipboard.writeText(window.location.href).catch(() => {});
+  const handleShare = async () => {
+    const url = window.location.href;
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `PoliceWatch — ${violationLabel ?? 'Incident'}`,
+          text: `Reported incident at ${incident?.address ?? ''}`,
+          url,
+        });
+        return;
+      } catch { /* user cancelled or API unsupported */ }
+    }
+    navigator.clipboard.writeText(url).catch(() => {});
   };
 
   const handlePrint = () => window.print();

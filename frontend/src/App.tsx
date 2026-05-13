@@ -3,6 +3,7 @@ import MapPage from './pages/MapPage';
 import RecordPage from './pages/RecordPage';
 import IncidentPage from './pages/IncidentPage';
 import AdminPage from './pages/AdminPage';
+import PatternsPage from './pages/PatternsPage';
 import NavBar from './components/NavBar';
 
 export default function App() {
@@ -14,6 +15,7 @@ export default function App() {
         <Route path="/record" element={<RecordPage />} />
         <Route path="/incident/:id" element={<IncidentPage />} />
         <Route path="/admin" element={<AdminPage />} />
+        <Route path="/patterns" element={<PatternsPage />} />
       </Routes>
     </>
   );

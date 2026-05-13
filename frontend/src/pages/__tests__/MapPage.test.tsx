@@ -110,4 +110,27 @@ describe('MapPage', () => {
     await userEvent.click(screen.getByTestId('marker-1'));
     expect(screen.getByText('Peachtree St, Atlanta')).toBeInTheDocument();
   });
+
+  it('renders date range filter chips', () => {
+    vi.mocked(useGetIncidentsQuery).mockReturnValue({
+      data: mockIncidents, isLoading: false, isError: false,
+    } as unknown as ReturnType<typeof useGetIncidentsQuery>);
+
+    renderPage();
+    expect(screen.getByText('All time')).toBeInTheDocument();
+    expect(screen.getByText('7 days')).toBeInTheDocument();
+    expect(screen.getByText('30 days')).toBeInTheDocument();
+    expect(screen.getByText('90 days')).toBeInTheDocument();
+  });
+
+  it('activates date range chip on click', async () => {
+    vi.mocked(useGetIncidentsQuery).mockReturnValue({
+      data: mockIncidents, isLoading: false, isError: false,
+    } as unknown as ReturnType<typeof useGetIncidentsQuery>);
+
+    renderPage();
+    const chip = screen.getByText('30 days');
+    await userEvent.click(chip);
+    expect(useGetIncidentsQuery).toHaveBeenCalledWith(expect.stringMatching(/^\d{4}-\d{2}-\d{2}/));
+  });
 });
