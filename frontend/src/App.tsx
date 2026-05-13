@@ -1,4 +1,4 @@
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, useLocation } from 'react-router-dom';
 import { Box } from '@mui/material';
 import MapPage from './pages/MapPage';
 import RecordPage from './pages/RecordPage';
@@ -12,25 +12,34 @@ import NavBar from './components/NavBar';
 import Footer from './components/Footer';
 import ErrorBoundary from './components/ErrorBoundary';
 
+function AppContent() {
+  const location = useLocation();
+  const isMap = location.pathname === '/';
+
+  return (
+    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100svh' }}>
+      <NavBar />
+      <Box sx={{ flexGrow: 1 }}>
+        <Routes>
+          <Route path="/" element={<MapPage />} />
+          <Route path="/record" element={<RecordPage />} />
+          <Route path="/incident/:id" element={<IncidentPage />} />
+          <Route path="/admin" element={<AdminPage />} />
+          <Route path="/patterns" element={<PatternsPage />} />
+          <Route path="/about" element={<AboutPage />} />
+          <Route path="/legal" element={<LegalPage />} />
+          <Route path="*" element={<NotFoundPage />} />
+        </Routes>
+      </Box>
+      {!isMap && <Footer />}
+    </Box>
+  );
+}
+
 export default function App() {
   return (
     <ErrorBoundary>
-      <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-        <NavBar />
-        <Box sx={{ flexGrow: 1 }}>
-          <Routes>
-            <Route path="/" element={<MapPage />} />
-            <Route path="/record" element={<RecordPage />} />
-            <Route path="/incident/:id" element={<IncidentPage />} />
-            <Route path="/admin" element={<AdminPage />} />
-            <Route path="/patterns" element={<PatternsPage />} />
-            <Route path="/about" element={<AboutPage />} />
-            <Route path="/legal" element={<LegalPage />} />
-            <Route path="*" element={<NotFoundPage />} />
-          </Routes>
-        </Box>
-        <Footer />
-      </Box>
+      <AppContent />
     </ErrorBoundary>
   );
 }

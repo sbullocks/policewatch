@@ -56,67 +56,59 @@ export default function MapPage() {
   }
 
   return (
-    <Box sx={{ position: 'relative', height: 'calc(100vh - 64px)' }}>
-      <ViolationFilterBar
-        active={activeFilters}
-        onChange={setActiveFilters}
-        counts={counts}
-      />
-
-      {filtered.length === 0 && !isLoading && (
-        <Box
-          sx={{
-            position: 'absolute',
-            bottom: 24,
-            left: '50%',
-            transform: 'translateX(-50%)',
-            zIndex: 1000,
-            bgcolor: 'background.paper',
-            px: 3,
-            py: 1.5,
-            borderRadius: 2,
-            boxShadow: 4,
-          }}
-        >
-          <Typography variant="body2" color="text.secondary">
-            {(incidents?.length ?? 0) === 0
-              ? 'No incidents reported yet. Be the first.'
-              : 'No incidents match the selected filters.'}
-          </Typography>
+    <Box sx={{ display: 'flex', flexDirection: 'column', height: 'calc(100svh - 64px)' }}>
+      {/* Filter bar — in document flow so it's always touchable */}
+      <Box sx={{ flexShrink: 0, bgcolor: 'background.paper', borderBottom: '1px solid', borderColor: 'divider' }}>
+        <ViolationFilterBar
+          active={activeFilters}
+          onChange={setActiveFilters}
+          counts={counts}
+        />
+        {/* Date range — second scrollable row */}
+        <Box sx={{ overflowX: 'auto', scrollbarWidth: 'none', '&::-webkit-scrollbar': { display: 'none' } }}>
+          <Stack direction="row" spacing={0.5} sx={{ flexWrap: 'nowrap', minWidth: 'max-content', px: 1, pb: 0.75 }}>
+            {DATE_RANGES.map(({ label, days }) => (
+              <Chip
+                key={label}
+                label={label}
+                size="small"
+                onClick={() => setDateRange(days)}
+                color={dateRange === days ? 'primary' : 'default'}
+                variant={dateRange === days ? 'filled' : 'outlined'}
+              />
+            ))}
+          </Stack>
         </Box>
-      )}
+      </Box>
 
-      {/* Date range — bottom-right, clear of the violation filter chips at top */}
-      <Stack
-        direction="row"
-        spacing={0.5}
-        sx={{
-          position: 'absolute',
-          bottom: 16,
-          right: 8,
-          zIndex: 1000,
-          bgcolor: 'background.paper',
-          borderRadius: 2,
-          p: 0.5,
-          boxShadow: 2,
-          flexWrap: 'wrap',
-          maxWidth: 220,
-          justifyContent: 'flex-end',
-        }}
-      >
-        {DATE_RANGES.map(({ label, days }) => (
-          <Chip
-            key={label}
-            label={label}
-            size="small"
-            onClick={() => setDateRange(days)}
-            color={dateRange === days ? 'primary' : 'default'}
-            variant={dateRange === days ? 'filled' : 'outlined'}
-          />
-        ))}
-      </Stack>
+      {/* Map fills remaining height */}
+      <Box sx={{ flexGrow: 1, position: 'relative', minHeight: 0 }}>
+        {filtered.length === 0 && (
+          <Box
+            sx={{
+              position: 'absolute',
+              bottom: 16,
+              left: '50%',
+              transform: 'translateX(-50%)',
+              zIndex: 1000,
+              bgcolor: 'background.paper',
+              px: 3,
+              py: 1.5,
+              borderRadius: 2,
+              boxShadow: 4,
+              whiteSpace: 'nowrap',
+            }}
+          >
+            <Typography variant="body2" color="text.secondary">
+              {(incidents?.length ?? 0) === 0
+                ? 'No incidents reported yet. Be the first.'
+                : 'No incidents match the selected filters.'}
+            </Typography>
+          </Box>
+        )}
+        <IncidentMap incidents={filtered} onSelect={setSelected} />
+      </Box>
 
-      <IncidentMap incidents={filtered} onSelect={setSelected} />
       <IncidentDetailDrawer incident={selected} onClose={() => setSelected(null)} />
     </Box>
   );

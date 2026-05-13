@@ -25,21 +25,19 @@ export default function ViolationFilterBar({ active, onChange, counts }: Props) 
   return (
     <Box
       sx={{
-        position: 'absolute',
-        top: 12,
-        left: '50%',
-        transform: 'translateX(-50%)',
-        zIndex: 1000,
-        bgcolor: 'background.paper',
-        borderRadius: 3,
-        px: 2,
-        py: 1,
-        boxShadow: 4,
-        maxWidth: '95vw',
+        overflowX: 'auto',
+        // Hide scrollbar visually but keep it functional
+        scrollbarWidth: 'none',
+        '&::-webkit-scrollbar': { display: 'none' },
       }}
     >
-      <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap" useFlexGap>
-        <Typography variant="caption" color="text.secondary" sx={{ whiteSpace: 'nowrap' }}>
+      <Stack
+        direction="row"
+        spacing={1}
+        alignItems="center"
+        sx={{ flexWrap: 'nowrap', minWidth: 'max-content', px: 1, py: 0.75 }}
+      >
+        <Typography variant="caption" color="text.secondary" sx={{ whiteSpace: 'nowrap', flexShrink: 0 }}>
           {total} incident{total !== 1 ? 's' : ''}
         </Typography>
         {Object.entries(VIOLATION_LABELS).map(([key, label]) => {
@@ -51,6 +49,7 @@ export default function ViolationFilterBar({ active, onChange, counts }: Props) 
               size="small"
               onClick={() => toggle(key)}
               sx={{
+                flexShrink: 0,
                 bgcolor: isActive ? VIOLATION_COLORS[key] : 'transparent',
                 color: isActive ? '#fff' : 'text.disabled',
                 borderColor: VIOLATION_COLORS[key],
